@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-import API from "../services/api";
 import toast, { Toaster } from "react-hot-toast";
+import API from "../services/api";
 
 function Login() {
   const navigate = useNavigate();
@@ -12,46 +12,39 @@ function Login() {
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
+    setLoading(true);
+
     try {
-      
+      const { data } = await API.post("/auth/login", formData);
 
-      const response = await API.post("/auth/login", formData);
-
-      alert("2️⃣ API Success");
-
-      console.log("LOGIN RESPONSE:", response.data);
-
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      alert("3️⃣ User Saved: " + localStorage.getItem("user"));
-      alert("4️⃣ Token Saved: " + localStorage.getItem("token"));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       toast.success("Login Successful 🎉");
 
-      navigate("/dashboard");
-
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 800);
     } catch (error) {
-      console.error(error);
-
-      alert(
-        "❌ API Failed: " +
-          (error.response?.data?.message || error.message)
-      );
-
       toast.error(
         error.response?.data?.message || "Login Failed"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,7 +67,9 @@ function Login() {
           }}
         >
           <div className="text-center mb-4">
-            <h2 className="fw-bold">🤖 AI Email Generator</h2>
+            <h2 className="fw-bold">
+              🤖 AI Email Generator
+            </h2>
 
             <p className="text-muted">
               Login to continue
@@ -92,10 +87,10 @@ function Login() {
               <input
                 type="email"
                 name="email"
-                value={formData.email}
-                onChange={handleChange}
                 className="form-control"
                 placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -109,10 +104,10 @@ function Login() {
               <input
                 type="password"
                 name="password"
-                value={formData.password}
-                onChange={handleChange}
                 className="form-control"
                 placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -120,13 +115,14 @@ function Login() {
             <button
               type="submit"
               className="btn btn-primary w-100 mt-2"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
 
           </form>
 
-          <p className="text-center mt-4">
+          <p className="text-center mt-4 mb-0">
             Don't have an account?
 
             <Link
