@@ -23,7 +23,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      alert("1️⃣ Login button clicked");
+      
 
       const response = await API.post("/auth/login", formData);
 

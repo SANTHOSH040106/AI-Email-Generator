@@ -1,22 +1,27 @@
 require("dotenv").config();
 
-const { MongoClient } = require("mongodb");
+const { InferenceClient } = require("@huggingface/inference");
 
-async function testConnection() {
+const client = new InferenceClient(process.env.HF_API_KEY);
+
+async function test() {
   try {
-    console.log("URI:", process.env.MONGO_URI.replace(/:\/\/.*:/, "://****:"));
+    const response = await client.chatCompletion({
+      model: "meta-llama/Llama-3.1-8B-Instruct",
+      messages: [
+        {
+          role: "user",
+          content: "Say hello",
+        },
+      ],
+    });
 
-    const client = new MongoClient(process.env.MONGO_URI);
-
-    await client.connect();
-
-    console.log("✅ MongoDB Connected Successfully!");
-
-    await client.close();
+    console.log("✅ Hugging Face Working");
+    console.log(response.choices[0].message.content);
   } catch (err) {
-    console.error("❌ Connection Error:");
+    console.error("❌ Hugging Face Error:");
     console.error(err);
   }
 }
 
-testConnection();
+test();
